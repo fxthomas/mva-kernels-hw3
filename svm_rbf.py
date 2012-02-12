@@ -17,6 +17,7 @@ from numpy import *
 from scipy import *
 from pylab import *
 from sklearn import svm
+from matplotlib.colors import rgb2hex
 
 data, classes = libras_loader.load ("data/movement_libras.data")
 error_train = 0.
@@ -25,27 +26,40 @@ nb_tests = 20
 train_ratio = 0.8
 train_count = int(train_ratio * len (data))
 
-for i in range(nb_tests):
-  # Randomly sample data vectors
-  _per = np.random.permutation(len(data))
-  _ds = data[_per, :]
-  _cs = classes[_per]
-  data_train    = _ds[:train_count,:]
-  data_test     = _ds[train_count:,:]
-  classes_train = _cs[:train_count]
-  classes_test  = _cs[train_count:]
+# Randomly sample data vectors
+_per = np.random.permutation(len(data))
+_ds = data[_per, :]
+_cs = classes[_per]
+data_train    = _ds[:train_count,:]
+data_test     = _ds[train_count:,:]
+classes_train = _cs[:train_count]
+classes_test  = _cs[train_count:]
 
-  # Train SVM
-  model = svm.SVC (C=14., gamma=.8, kernel='rbf')
-  model.fit (data_train, classes_train)
+gamma_values = exp (arange (-5, 5, 0.1))
+C_values = exp (arange(-2, 5, 1))
+error_train_values = zeros (gamma_values.shape)
+error_test_values = zeros (gamma_values.shape)
 
-  # Test model
-  predictions_train = model.predict (data_train)
-  predictions_test = model.predict (data_test)
+for j in range(len(C_values)):
+  for i in range(len(gamma_values)):
+    gamma = gamma_values[i]
+    C = C_values[j]
+    print "  --> Gamma = {0} ; C = {1}".format (gamma, C)
 
-  # Print errors
-  error_train = error_train + float(len(find(predictions_train != classes_train)))/float(len(classes_train))
-  error_test = error_test + float(len(find(predictions_test != classes_test)))/float(len(classes_test))
+    # Train SVM
+    model = svm.SVC (C=C, gamma=gamma, kernel='rbf')
+    model.fit (data_train, classes_train)
 
-print "Average Error (Train): {0}%".format (error_train*100./nb_tests)
-print "Average Error (Test): {0}%".format (error_test*100./nb_tests)
+    # Test model
+    predictions_train = model.predict (data_train)
+    predictions_test = model.predict (data_test)
+
+    # Print errors
+    error_train_values[i] = float(len(find(predictions_train != classes_train)))/float(len(classes_train))
+    error_test_values[i]  = float(len(find(predictions_test != classes_test)))/float(len(classes_test))
+
+  semilogx (gamma_values, error_test_values, color=rgb2hex((rand(), rand(), rand())), label="C={0}".format(C), linewidth=3.0)
+legend ()
+ylabel ("Classification Error (%)")
+xlabel ("Gamma")
+show()
