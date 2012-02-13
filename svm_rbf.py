@@ -11,6 +11,7 @@
 # 
 # (ɔ) François-Xavier Thomas <fx.thomas@gmail.com>
 
+import xml_loader
 import libras_loader
 import numpy as np
 from numpy import *
@@ -19,7 +20,8 @@ from pylab import *
 from sklearn import svm
 from matplotlib.colors import rgb2hex
 
-data, classes = libras_loader.load ("data/movement_libras.data")
+#data, classes = libras_loader.load ("data/movement_libras.data")
+data, classes = xml_loader.load ("data/HandWritingModels.xml")
 error_train = 0.
 error_test = 0.
 nb_tests = 20
@@ -35,7 +37,7 @@ data_test     = _ds[train_count:,:]
 classes_train = _cs[:train_count]
 classes_test  = _cs[train_count:]
 
-gamma_values = exp (arange (-5, 5, 0.1))
+gamma_values = exp (arange (-10, 10, 0.2))
 C_values = exp (arange(-2, 5, 1))
 error_train_values = zeros (gamma_values.shape)
 error_test_values = zeros (gamma_values.shape)
@@ -63,6 +65,7 @@ for j in range(len(C_values)):
 
   semilogx (gamma_values, error_test_values, color=colors[j], label="C={0:.1f}".format(C), linewidth=3.0)
 legend ()
+title ("Classification Error for RBF Kernel")
 ylabel ("Classification Error (%)")
 xlabel ("Gamma")
 show()
