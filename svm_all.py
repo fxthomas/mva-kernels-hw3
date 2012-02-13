@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 
-# Base Python File (svm_rbf.py)
+# Base Python File (svm_linear.py)
 # Created: Sun Feb 12 17:06:31 2012
 # Version: 1.0
 #
@@ -35,18 +35,18 @@ data_test     = _ds[train_count:,:]
 classes_train = _cs[:train_count]
 classes_test  = _cs[train_count:]
 
-gamma_values = exp (arange (-5, 5, 0.1))
-C_values = exp (arange(-2, 5, 1))
-error_train_values = zeros (gamma_values.shape)
-error_test_values = zeros (gamma_values.shape)
+C_values = exp (arange(-5, 7, 0.1))
+gamma_values = exp (arange (-2, 5, 1))
+error_train_values = zeros (C_values.shape)
+error_test_values = zeros (C_values.shape)
 
 phi = get_cmap('jet')
-colors = [phi(float(i)/float(len(C_values))) for i in range(len(C_values))]
+colors = [phi(float(i)/float(len(gamma_values)+1)) for i in range(len(gamma_values)+1)]
 
-for j in range(len(C_values)):
-  for i in range(len(gamma_values)):
-    gamma = gamma_values[i]
-    C = C_values[j]
+for j in range(len(gamma_values)):
+  for i in range(len(C_values)):
+    gamma = gamma_values[j]
+    C = C_values[i]
     print "  --> Gamma = {0} ; C = {1}".format (gamma, C)
 
     # Train SVM
@@ -61,8 +61,27 @@ for j in range(len(C_values)):
     error_train_values[i] = float(len(find(predictions_train != classes_train)))/float(len(classes_train))
     error_test_values[i]  = float(len(find(predictions_test != classes_test)))/float(len(classes_test))
 
-  semilogx (gamma_values, error_test_values, color=colors[j], label="C={0:.1f}".format(C), linewidth=3.0)
-legend ()
+  semilogx (C_values, error_test_values, color=colors[j], label="RBF Kernel, g={0:.1f}".format(gamma), linewidth=3.0)
+
+for i in range(len(C_values)):
+  C = C_values[i]
+  print "  --> C = {0}".format (C)
+
+  # Train SVM
+  model = svm.SVC (C=C, kernel='linear')
+  model.fit (data_train, classes_train)
+
+  # Test model
+  predictions_train = model.predict (data_train)
+  predictions_test = model.predict (data_test)
+
+  # Print errors
+  error_train_values[i] = float(len(find(predictions_train != classes_train)))/float(len(classes_train))
+  error_test_values[i]  = float(len(find(predictions_test != classes_test)))/float(len(classes_test))
+
+semilogx (C_values, error_test_values, color=colors[-1], linewidth=3.0, label="Linear Kernel")
+
+legend()
 ylabel ("Classification Error (%)")
-xlabel ("Gamma")
+xlabel ("C")
 show()
