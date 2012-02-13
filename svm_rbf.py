@@ -58,7 +58,7 @@ for j in range(len(C_values)):
     error_train_values[i] = float(len(find(predictions_train != classes_train)))/float(len(classes_train))
     error_test_values[i]  = float(len(find(predictions_test != classes_test)))/float(len(classes_test))
 
-  semilogx (gamma_values, error_test_values, color=rgb2hex((rand(), rand(), rand())), label="C={0}".format(C), linewidth=3.0)
+  semilogx (gamma_values, error_test_values, color=rgb2hex((rand(), rand(), rand())), label="C={0:.1f}".format(C), linewidth=3.0)
 legend ()
 ylabel ("Classification Error (%)")
 xlabel ("Gamma")
