@@ -18,10 +18,10 @@ from scipy import *
 from pylab import *
 from scipy.interpolate import interp1d
 
-touch_count = 60
-touch_resolution = 1./float(touch_count)
+touch_count = 30
 
-def load (fname):
+def load (fname, resolution=touch_count):
+  touch_resolution = 1./float(resolution)
   dom = parse (open (fname))
   records = dom.getElementsByTagName("record")
   characters = []
@@ -43,6 +43,7 @@ def load (fname):
 
     # Get list of touches
     moves = record.getElementsByTagName("move")
+    print (" --> Found {0} moves".format (len (moves)))
 
     # Arrange touches into distance, angle and touched? lists
     distance = []
@@ -57,8 +58,14 @@ def load (fname):
       if _cd == 0 or last_distance > _cd:
         continue
       _ca = float (move.getAttribute ("angle"))
-      if _ca < last_angle:
+      _dc1 = last_angle - _ca
+      _dc2 = last_angle - (_ca + 2*pi)
+      _dc3 = last_angle - (_ca - 2*pi)
+      _dci = argmin ((_dc1, _dc2, _dc3))
+      if _dci == 1:
         _ca = _ca + 2*pi
+      elif dci == 2:
+        _ca = _ca - 2*pi
 
       distance.append (_cd)
       angle.append (_ca)

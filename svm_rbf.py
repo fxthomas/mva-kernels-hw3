@@ -18,6 +18,7 @@ from numpy import *
 from scipy import *
 from pylab import *
 from sklearn import svm
+from sklearn.multiclass import *
 from matplotlib.colors import rgb2hex
 
 #data, classes = libras_loader.load ("data/movement_libras.data")
@@ -52,7 +53,9 @@ for j in range(len(C_values)):
     print "  --> Gamma = {0} ; C = {1}".format (gamma, C)
 
     # Train SVM
-    model = svm.SVC (C=C, gamma=gamma, kernel='rbf')
+    #model = OneVsRestClassifier (svm.SVC (C=C, gamma=gamma, kernel='rbf'))
+    model = OneVsOneClassifier (svm.SVC (C=C, gamma=gamma, kernel='rbf'))
+    #model = OutputCodeClassifier (svm.SVC (C=C, gamma=gamma, kernel='rbf'), 1.5)
     model.fit (data_train, classes_train)
 
     # Test model
