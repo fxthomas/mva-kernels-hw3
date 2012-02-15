@@ -20,6 +20,9 @@ from scipy.interpolate import interp1d
 
 touch_count = 30
 
+def angleVect (angle, distance):
+  return array([distance*cos(angle), distance*sin(angle)])
+
 def load (fname, resolution=touch_count):
   touch_resolution = 1./float(resolution)
   dom = parse (open (fname))
@@ -71,17 +74,20 @@ def load (fname, resolution=touch_count):
       angle.append (_ca)
       touched.append (float(move.getAttribute ("touch")))
 
-    # Convert sequences to numpy arrays
-    distance = array(distance)
-    angle = array (angle)
-    touched = array (touched)
+    current_point = array([0.,0.])
+    points = [current_point,]
+    for (a,d) in zip(angle, distance):
+      current_point = current_point + angleVect (a,d)
+      points.append (current_point)
+    points = array (points)
 
     # Interpolate to only have unitary distances
-    distance = cumsum(distance)-distance[0]
+    distance = cumsum(array ([0]+distance))
     distance = distance/max(distance)
-    print distance
-    fangle = interp1d (distance, angle, kind='linear', fill_value=0)
-    data = mod (fangle (arange (0., 1., touch_resolution)), 2*pi)
+    finterp = interp1d (distance, points, kind='linear', axis=0)
+    data = finterp (arange (0., 1., touch_resolution))
+
+    data = data.reshape ((resolution*2,))
 
     # Save data
     characters.append (data)
